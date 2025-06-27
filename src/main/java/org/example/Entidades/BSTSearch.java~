@@ -1,0 +1,191 @@
+package org.example.Entidades;
+import org.example.SortedSet;
+
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.NoSuchElementException;
+
+public class BSTSearch<T extends Comparable<? super T>> implements SortedSet<T> {
+
+    private Node<T> root;
+    private int size;
+
+    public BSTSearch() {
+
+    }
+
+    private boolean isBST(Node<T> x, T min, T max) {
+        if (x == null) {
+            return true;
+        }
+        if (min != null && (x.key.compareTo(min) <= 0)) {
+            return false;
+        }
+        if (max != null && (x.key.compareTo(max)) >= 0) {
+            return false;
+        }
+        return isBST(x.hi, min, x.key) && isBST(x.hd, x.key, max);
+    }
+
+    public boolean repOK() {
+        return isBST(root, null, null);
+    }
+
+    @Override
+    public boolean add(T x) {
+        if (contains(x)) {
+            return false;
+        }
+        root = add(root, x);
+        size++;
+        return true;
+    }
+
+    private Node<T> add(Node<T> x, T key) {
+        if (x == null) {
+            return new Node(key);
+        }
+        int cmp = key.compareTo(x.key);
+
+        if (cmp < 0) {
+            x.hi = add(x.hi, key);
+        } else if (cmp > 0) {
+            x.hd = add(x.hd, key);
+        } else {
+            assert false;
+        }
+        return x;
+    }
+
+    @Override
+    public int size() {
+        return size;
+    }
+
+    @Override
+    public void removeMin() {
+        if (isEmpty()) {
+            throw new NoSuchElementException();
+        }
+        root = removeMin(root);
+        size--;
+    }
+
+    public Node<T> removeMin(Node<T> x) {
+        if (x.hi == null) {
+            return x.hd;
+        }
+        x.hi = removeMin(x.hi);
+        return x;
+    }
+
+    public T min() {
+        if (isEmpty()) {
+            throw new NoSuchElementException("VACIO");
+        }
+        return min(root).key;
+    }
+
+    public T max() {
+        if (isEmpty()) {
+            throw new NoSuchElementException("VACIO");
+        }
+        return max(root).key;
+    }
+
+    public Node<T> min(Node<T> x) {
+        if (x.hi == null) {
+            return x;
+        } else {
+            return min(x.hi);
+        }
+
+    }
+
+    public Node<T> max(Node<T> x) {
+        if (x.hd == null) {
+            return x;
+        } else {
+            return max(x.hd);
+        }
+    }
+
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
+    @Override
+    public boolean contains(T key) {
+        return get(root, key) != null;
+    }
+
+    public Node<T> get(Node<T> x, T key) {
+        if (x == null) {
+            return null;
+        }
+        int cmp = key.compareTo(x.key);
+        if (cmp < 0) {
+            return get(x.hi, key);
+        } else if (cmp > 0) {
+            return get(x.hd, key);
+        }
+        return x;
+    }
+
+    public boolean remove(T key) {
+        if (!contains(key)) {
+            return false;
+        }
+        root = remove(root, key);
+        size--;
+        return true;
+    }
+
+    public Node<T> remove(Node<T> x, T key) {
+        int cmp = x.key.compareTo(key);
+        if (cmp < 0) {
+            x.hi = remove(x.hi, key);
+        } else if (cmp > 0) {
+            x.hd = remove(x.hd, key);
+        } else {
+            if (x.hd == null) {
+                return x.hi;
+            }
+            if (x.hi == null) {
+                return x.hd;
+            }
+            Node<T> t = x;
+            x = min(x.hd);
+            x.hd = removeMin(x.hd);
+            x.hi = t.hi;
+        }
+        return x;
+    }
+
+    public List<T> inOrder() {
+        if (root == null) {
+            return new LinkedList<>();
+        }
+        return root.inOrder();
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        List<T> list = new LinkedList<T>();
+        list = root.inOrder();
+        return list.iterator();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder res = new StringBuilder("{");
+        List<T> elems = inOrder();
+        for (int i = 0; i < elems.size(); i++) {
+            if (i > 0) res.append(", ");
+            res.append(elems.get(i));
+        }
+        res.append("}");
+        return res.toString();
+    }
+}

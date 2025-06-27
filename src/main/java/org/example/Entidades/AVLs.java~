@@ -1,0 +1,200 @@
+package org.example.Entidades;
+
+import org.example.SortedSet;
+
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
+public class AVLs <T extends Comparable<? super T>> implements SortedSet<T> {
+
+    public NodeAvl<T> root;
+    public int size;
+
+    public AVLs(){
+
+    }
+
+    public boolean repOK(){
+        return isAVL(root);
+    }
+
+    public boolean isAVL(NodeAvl<T>x){
+        if (x==null){
+            return true;
+        }
+        int bf = balanceFactor(x);
+        if (bf > 1 || bf < -1){
+            return false;
+        }
+        return isAVL(x.hi) && isAVL(x.hd);
+    }
+
+
+    public int height(NodeAvl<T> x) {
+        if (x == null) return 0;
+        return x.height;
+    }
+
+    public int balanceFactor(NodeAvl<T> x){
+        return height(x.hi) - height(x.hd);
+    }
+
+    @Override
+    public boolean add(T x) {
+        if (contains(x)){
+            return false;
+        }
+        root = add(root,x);
+        size++;
+        return true;
+    }
+
+    public NodeAvl<T> add(NodeAvl<T> x ,T key){
+        if (x == null){
+            return new NodeAvl<>(key,1);
+        }
+        int cmp = key.compareTo(x.key);
+        if(cmp < 0){
+            x.hi = add(x.hi,key);
+        }else if(cmp >0){
+            x.hd = add(x.hd,key);
+        }else {
+            assert false;
+        }
+        x.height = 1+Math.max(height(x.hi),height(x.hd));
+        return balance(x);
+    }
+
+    @Override
+    public int size() {
+        return size;
+    }
+
+    @Override
+    public void removeMin() {
+        if (isEmpty()){
+            throw  new IllegalArgumentException("VACIO");
+        }
+        root =removeMin(root);
+        size--;
+    }
+
+    private NodeAvl<T> removeMin(NodeAvl<T> x){
+        if (x.hi == null){
+            return x.hd;
+        }
+        x.hi = removeMin(x.hi);
+        x.height = 1+Math.max(height(x.hi),height(x.hd));
+        return balance(x);
+    }
+
+    public NodeAvl<T> min(NodeAvl<T> x) {
+        if (x.hi == null) return x;
+        return min(x.hi);
+    }
+
+    public NodeAvl<T> max(NodeAvl<T> x) {
+        if (x.hd == null) return x;
+        return max(x.hd);
+    }
+
+    public boolean isEmpty(){
+        return root == null;
+    }
+
+    @Override
+    public boolean contains(T key){
+        return get(root,key)!=null;
+    }
+    public NodeAvl<T> get(NodeAvl<T> x,T key){
+        if (x == null){
+            return null;
+        }
+        int cmp = key.compareTo(x.key);
+        if (cmp<0){
+            return get(x.hi,key);
+        }else if (cmp > 0){
+            return get(x.hd,key);
+        }
+        return x;
+    }
+
+
+    public NodeAvl<T> remove(NodeAvl<T> x,T key){
+        int cmp = key.compareTo(x.key);
+        if(cmp < 0){
+            x.hi = remove(x.hi,key);
+        }else if (cmp > 0){
+            x.hd = remove(x.hd,key);
+        }else {
+            if (x.hd == null){
+                return x.hi;
+            }
+            if (x.hi == null){
+                return x.hd;
+            }
+            NodeAvl<T> t = x;
+            x = min(x.hd);
+            x.hd = removeMin(x.hd);
+            x.hi  = t.hi;
+        }
+        x.height = 1+Math.max(height(x.hi),height(x.hd));
+        return balance(x);
+    }
+
+
+    @Override
+    public Iterator<T> iterator() {
+        return null;
+    }
+
+    public NodeAvl<T> rotateLeft(NodeAvl<T> x){
+        NodeAvl<T> y = x.hd;
+        x.hd=y.hi;
+        y.hi=x;
+        x.height=1+Math.max(height(x.hi),height(x.hd));
+        y.height=1+Math.max(height(y.hi),height(y.hd));
+        return y;
+    }
+    public NodeAvl<T> rotateRight(NodeAvl<T> x){
+        NodeAvl<T> y = x.hi;
+        x.hi=y.hd;
+        y.hd=x;
+        x.height=1+Math.max(height(x.hi),height(x.hd));
+        y.height=1+Math.max(height(y.hi),height(y.hd));
+        return y;
+    }
+
+    public NodeAvl<T> balance(NodeAvl<T> x){
+        if (balanceFactor(x)< -1){
+            if (balanceFactor(x.hd) > 0){
+                x.hd = rotateRight(x.hd);
+            }
+            x = rotateLeft(x);
+        }else if (balanceFactor(x)>1){
+            if (balanceFactor(x.hi) <0){
+                x.hi = rotateLeft(x.hi);
+            }
+            x = rotateRight(x);
+        }
+        return x;
+    }
+
+
+
+    @Override
+    public String toString() {
+        List<T> result = new LinkedList<>();
+        inOrder(root, result);
+        return result.toString();
+    }
+
+    private void inOrder(NodeAvl<T> x, List<T> result) {
+        if (x == null) return;
+        inOrder(x.hi, result); // izquierdo
+        result.add(x.key);     // nodo
+        inOrder(x.hd, result); // derecho
+    }
+
+}
