@@ -29,36 +29,7 @@ public class Heap<T extends  Comparable<? super T>> implements PriorityQueue<T> 
         return isMaxHeapOrdered(1);
     }
 
-    private boolean less(T a, T b){
-        return a.compareTo(b) < 0;
-    }
-
-    public void exch(T[] a, int i, int j){
-        T t = a[i];
-        a[i] = a[j];
-        a[j] = t;
-    }
-    private void swim(int i){
-        while (i>1 && less(queue[i/2],queue[i])){
-            exch(queue,i/2,i);
-            i = i/2;
-        }
-    }
-
-    private void sink(int i) {
-        while (2 * i <= size) {
-            int j = 2 * i;
-            if (j < size && less(queue[j], queue[j + 1])) {
-                j++;
-            }
-            if (!less(queue[i], queue[j])) {
-                break;
-            }
-            exch(queue, i, j);
-            i = j;
-        }
-    }
-    private boolean isMaxHeapOrdered(int i){
+     private boolean isMaxHeapOrdered(int i){
         if (i > size){
             return true;
         }
@@ -73,6 +44,37 @@ public class Heap<T extends  Comparable<? super T>> implements PriorityQueue<T> 
         return isMaxHeapOrdered(left) && isMaxHeapOrdered(right);
     }
 
+    private boolean less(T a, T b){
+        return a.compareTo(b) < 0;
+    }
+    public void exch(T[] a, int i, int j){
+        T t = a[i];
+        a[i] = a[j];
+        a[j] = t;
+    }
+
+    private void swim(int i){
+        while (i>1 && less(queue[i/2],queue[i])){
+            exch(queue,i/2,i);
+            i = i/2;
+        }
+    }
+
+    
+    private void sink(int i) {
+        while (2 * i <= size) {
+            int j = 2 * i;
+            if (j < size && less(queue[j], queue[j + 1])) {
+                j++;
+            }
+            if (!less(queue[i], queue[j])) {
+                break;
+            }
+            exch(queue, i, j);
+            i = j;
+        }
+    }   
+
     public void resize(int capacity){
         T[] temp = (T[]) new Comparable[capacity];
         for (int i = 1; i <= size; i++){
@@ -80,6 +82,7 @@ public class Heap<T extends  Comparable<? super T>> implements PriorityQueue<T> 
         }
         queue = temp;
     }
+
     @Override
     public void insert(T x) {
         if (size == queue.length-1){
